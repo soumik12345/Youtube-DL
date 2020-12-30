@@ -1,6 +1,7 @@
 import tensorflow as tf
 from .model import NoobModel
 from .dataloader import DataLoader
+from .callbacks import ClassifierCallback
 
 
 class Trainer:
@@ -40,5 +41,7 @@ class Trainer:
 
     def train(self, epochs: int):
         history = self.model.fit(
-            self.train_dataset, validation_data=self.val_dataset, epochs=epochs)
+            self.train_dataset, validation_data=self.val_dataset,
+            epochs=epochs, callbacks=ClassifierCallback()
+        )
         return history

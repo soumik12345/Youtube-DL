@@ -48,7 +48,7 @@ def train_module():
 
             epochs = st.number_input(
                 'Enter number of epochs: ',
-                min_value=2, max_value=10e5, step=2, value=10
+                min_value=2, max_value=10000, step=2, value=10
             )
 
             start_training = st.button('Start Training', key='button1')
