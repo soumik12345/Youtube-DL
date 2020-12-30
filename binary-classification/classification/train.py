@@ -40,8 +40,15 @@ class Trainer:
         )
 
     def train(self, epochs: int):
+        callbacks = [
+            ClassifierCallback(),
+            tf.keras.callbacks.ModelCheckpoint(
+                filepath='./checkpoints/model_best.ckpt', monitor='val_loss',
+                save_weights_only=True, save_best_only=True, mode='min', save_freq='epoch'
+            )
+        ]
         history = self.model.fit(
             self.train_dataset, validation_data=self.val_dataset,
-            epochs=epochs, callbacks=ClassifierCallback()
+            epochs=epochs, callbacks=callbacks
         )
         return history
