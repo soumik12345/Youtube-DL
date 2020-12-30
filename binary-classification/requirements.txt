@@ -1,0 +1,7 @@
+matplotlib==3.3.3
+plotly-express==0.4.1
+streamlit==0.73.1
+tensorflow==2.4.0
+tensorflow-estimator==2.4.0
+numpy~=1.19.4
+plotly~=4.14.1
