@@ -1,4 +1,6 @@
 import tensorflow as tf
+from datetime import datetime
+
 from .model import NoobModel
 from .dataloader import DataLoader
 from .callbacks import ClassifierCallback
@@ -40,11 +42,16 @@ class Trainer:
         )
 
     def train(self, epochs: int):
+        log_dir = "logs/fit/" + datetime.now().strftime("%Y%m%d-%H%M%S")
         callbacks = [
             ClassifierCallback(),
             tf.keras.callbacks.ModelCheckpoint(
                 filepath='./checkpoints/model_best.ckpt', monitor='val_loss',
                 save_weights_only=True, save_best_only=True, mode='min', save_freq='epoch'
+            ),
+            tf.keras.callbacks.TensorBoard(
+                log_dir=log_dir, histogram_freq=1,
+                update_freq=50, write_images=True
             )
         ]
         history = self.model.fit(
