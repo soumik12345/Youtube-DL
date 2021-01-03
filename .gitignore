@@ -5,3 +5,5 @@
 20**
 **model_best**
 **epoch**
+checkpoints/
+binary-classification/assets/inference.mov

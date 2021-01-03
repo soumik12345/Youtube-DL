@@ -1,3 +1,4 @@
+import pickle
 import tensorflow as tf
 from datetime import datetime
 from plotly import graph_objects as go
@@ -18,6 +19,11 @@ class Trainer:
         self.training_history = None
         self.unique_labels = None
 
+    def _save_labels(self, file_name: str):
+        outfile = open(file_name, 'wb')
+        pickle.dump(self.unique_labels, outfile)
+        outfile.close()
+
     def build_datasets(
             self, image_file_pattern: str, show_sanity_checks=True, using_streamlit=True,
             val_split=0.2, test_split=0.3, buffer_size=1024, train_batch_size=16, val_batch_size=16):
@@ -27,6 +33,7 @@ class Trainer:
             image_size=self.image_size
         )
         self.unique_labels = dataloader.unique_labels
+        self._save_labels(file_name='./checkpoints/unique_labels.pkl')
         self.train_dataset, self.val_dataset, self.test_dataset = dataloader.build_dataset(
             val_split=val_split, test_split=test_split, buffer_size=buffer_size,
             train_batch_size=train_batch_size, val_batch_size=val_batch_size,

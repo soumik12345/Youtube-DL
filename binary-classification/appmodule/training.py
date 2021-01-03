@@ -7,7 +7,9 @@ from classification.inference import ModelPredictor
 
 def train_module():
 
-    image_file_pattern = st.text_input('Enter Image File Pattern: ')
+    dataset_path = st.text_input('Enter Dataset Path: ')
+    image_file_pattern = str(os.path.join(dataset_path, '*[1-2]/*.jpg'))
+    print(image_file_pattern)
     show_sanity_checks = st.checkbox('Show Sanity Checks??? ')
     image_size = st.number_input(
         "Enter size of the images: ",
@@ -38,9 +40,13 @@ def train_module():
             min_value=4, max_value=256, value=16, step=4
         )
 
-    files_existence_list = [os.path.exists(_file) for _file in glob(image_file_pattern)]
+    files_existence_list = []
+    try:
+        files_existence_list = [os.path.exists(_file) for _file in glob(image_file_pattern)]
+    except Exception as e:
+        print(e)
 
-    if len(image_file_pattern) > 0:
+    if len(dataset_path) > 0:
         if [True] * len(glob(image_file_pattern)) == files_existence_list:
             trainer = Trainer(image_size=image_size)
             if show_sanity_checks:
