@@ -6,4 +6,5 @@
 **model_best**
 **epoch**
 checkpoints/
+kaggle.json
 binary-classification/assets/inference.mov

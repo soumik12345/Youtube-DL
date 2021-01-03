@@ -103,7 +103,6 @@ class ModelPredictor:
                     self.unique_labels[y[i]], self.unique_labels[y_pred[i]]))
             plt.axis('off')
         if using_streamlit:
-            import streamlit as st
             st.pyplot(plt)
         else:
             plt.show()
