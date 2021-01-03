@@ -13,20 +13,24 @@ class Trainer:
         self.image_size = image_size
         self.train_dataset = None
         self.val_dataset = None
+        self.test_dataset = None
         self.model = None
         self.training_history = None
+        self.unique_labels = None
 
     def build_datasets(
             self, image_file_pattern: str, show_sanity_checks=True, using_streamlit=True,
-            val_split=0.2, buffer_size=1024, train_batch_size=16, val_batch_size=16):
+            val_split=0.2, test_split=0.3, buffer_size=1024, train_batch_size=16, val_batch_size=16):
         dataloader = DataLoader(
             image_file_pattern=image_file_pattern,
             show_sanity_checks=show_sanity_checks,
             image_size=self.image_size
         )
-        self.train_dataset, self.val_dataset = dataloader.build_dataset(
-            val_split=val_split, buffer_size=buffer_size, using_streamlit=using_streamlit,
-            train_batch_size=train_batch_size, val_batch_size=val_batch_size
+        self.unique_labels = dataloader.unique_labels
+        self.train_dataset, self.val_dataset, self.test_dataset = dataloader.build_dataset(
+            val_split=val_split, test_split=test_split, buffer_size=buffer_size,
+            train_batch_size=train_batch_size, val_batch_size=val_batch_size,
+            using_streamlit=using_streamlit
         )
 
     def build_model(self, model_schematic_location='model.png'):
@@ -43,22 +47,22 @@ class Trainer:
             loss=tf.keras.losses.BinaryCrossentropy(from_logits=True)
         )
 
-    def _plot_history(self, property: str):
+    def _plot_history(self, train_property: str):
         figure = go.Figure()
         figure.add_traces(
             go.Scatter(
                 x=[i + 1 for i in list(
-                    range(len(self.training_history.history[property])))],
-                y=self.training_history.history[property],
-                mode='lines+markers', name='Training Result: ' + property
+                    range(len(self.training_history.history[train_property])))],
+                y=self.training_history.history[train_property],
+                mode='lines+markers', name='Training Result: ' + train_property
             )
         )
         figure.add_traces(
             go.Scatter(
                 x=[i + 1 for i in list(
-                    range(len(self.training_history.history['val_' + property])))],
-                y=self.training_history.history['val_' + property],
-                mode='lines+markers', name='Training Result: ' + 'validation ' + property
+                    range(len(self.training_history.history['val_' + train_property])))],
+                y=self.training_history.history['val_' + train_property],
+                mode='lines+markers', name='Training Result: ' + 'validation ' + train_property
             )
         )
         figure.update_layout(title='Loss')

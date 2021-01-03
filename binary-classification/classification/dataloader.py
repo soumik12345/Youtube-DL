@@ -38,8 +38,8 @@ class DataLoader:
         return dataset
 
     def build_dataset(
-            self, val_split: float, buffer_size: int, train_batch_size: int,
-            val_batch_size: int, using_streamlit: bool):
+            self, val_split: float, test_split: float, buffer_size: int,
+            train_batch_size: int, val_batch_size: int, using_streamlit: bool):
         dataset = tf.data.Dataset.from_tensor_slices(
             (self.image_files, self.encoded_labels)).shuffle(
             self.num_images, reshuffle_each_iteration=False
@@ -52,16 +52,22 @@ class DataLoader:
                         filename, self.unique_labels[label]))
         train_dataset = dataset.skip(int(self.num_images * val_split))
         val_dataset = dataset.take(int(self.num_images * val_split))
+        val_cardinality = tf.data.experimental.cardinality(val_dataset).numpy()
+        val_dataset = val_dataset.skip(int(val_cardinality * test_split))
+        test_dataset = val_dataset.take(int(val_cardinality * test_split))
         train_dataset = self._get_configured_dataset(
             train_dataset, buffer_size=buffer_size, batch_size=train_batch_size)
         val_dataset = self._get_configured_dataset(
             val_dataset, buffer_size=buffer_size, batch_size=val_batch_size)
+        test_dataset = self._get_configured_dataset(
+            test_dataset, buffer_size=buffer_size, batch_size=val_batch_size)
         if self.show_sanity_checks:
             print(train_dataset)
             print(val_dataset)
+            print(test_dataset)
             sample_images, sample_labels = next(iter(train_dataset))
             self.visualizer.visualize_batch(
                 sample_images=sample_images, sample_labels=sample_labels,
                 using_streamlit=using_streamlit
             )
-        return train_dataset, val_dataset
+        return train_dataset, val_dataset, test_dataset
