@@ -53,7 +53,6 @@ class ModelPredictor:
         figure.update_layout(coloraxis_showscale=False)
         figure.update_xaxes(showticklabels=False)
         figure.update_yaxes(showticklabels=False)
-        st.plotly_chart(figure, use_container_width=True)
 
         bar_figure = go.Figure([
             go.Bar(
@@ -63,8 +62,19 @@ class ModelPredictor:
                     probability_class_1
                 ])
         ])
-        bar_figure.update_layout(title='Class Probablities')
-        st.plotly_chart(bar_figure)
+        bar_figure.update_layout(
+            title={
+                'text': 'Class Probabilities', 'x': 0.5, 'y': 0.05,
+                'xanchor': 'center', 'yanchor': 'bottom'
+            }
+        )
+
+        col_1, col_2 = st.beta_columns(2)
+
+        with col_1:
+            st.plotly_chart(figure, use_container_width=True)
+        with col_2:
+            st.plotly_chart(bar_figure, use_container_width=True)
 
     def predict_from_image(self, pil_image, image_size, using_streamlit: bool):
         image = tf.keras.preprocessing.image.img_to_array(pil_image)
