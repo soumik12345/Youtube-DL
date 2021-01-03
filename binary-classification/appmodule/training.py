@@ -56,4 +56,4 @@ def train_module():
             if start_training:
                 st.text('Use the following command to start and view tensorboard:')
                 st.text('tensorboard --logdir="./logs" --port 6009')
-                trainer.train(epochs=epochs)
+                trainer.train(epochs=epochs, using_streamlit=True)

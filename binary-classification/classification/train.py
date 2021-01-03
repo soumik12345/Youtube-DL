@@ -1,5 +1,6 @@
 import tensorflow as tf
 from datetime import datetime
+from plotly import graph_objects as go
 
 from .model import NoobModel
 from .dataloader import DataLoader
@@ -13,6 +14,7 @@ class Trainer:
         self.train_dataset = None
         self.val_dataset = None
         self.model = None
+        self.training_history = None
 
     def build_datasets(
             self, image_file_pattern: str, show_sanity_checks=True, using_streamlit=True,
@@ -41,21 +43,50 @@ class Trainer:
             loss=tf.keras.losses.BinaryCrossentropy(from_logits=True)
         )
 
-    def train(self, epochs: int):
+    def _plot_history(self, property: str):
+        figure = go.Figure()
+        figure.add_traces(
+            go.Scatter(
+                x=[i + 1 for i in list(
+                    range(len(self.training_history.history[property])))],
+                y=self.training_history.history[property],
+                mode='lines+markers', name='Training Result: ' + property
+            )
+        )
+        figure.add_traces(
+            go.Scatter(
+                x=[i + 1 for i in list(
+                    range(len(self.training_history.history['val_' + property])))],
+                y=self.training_history.history['val_' + property],
+                mode='lines+markers', name='Training Result: ' + 'validation ' + property
+            )
+        )
+        figure.update_layout(title='Loss')
+        return figure
+
+    def train(self, epochs: int, using_streamlit: bool):
         log_dir = "logs/fit/" + datetime.now().strftime("%Y%m%d-%H%M%S")
         callbacks = [
             ClassifierCallback(),
             tf.keras.callbacks.ModelCheckpoint(
-                filepath='./checkpoints/model_best.ckpt', monitor='val_loss',
-                save_weights_only=True, save_best_only=True, mode='min', save_freq='epoch'
+                filepath='./checkpoints/epoch_{epoch}/classifier_weights.ckpt',
+                monitor='val_loss', save_weights_only=True, save_best_only=True,
+                mode='min', save_freq='epoch'
             ),
             tf.keras.callbacks.TensorBoard(
                 log_dir=log_dir, histogram_freq=1,
                 update_freq=50, write_images=True
             )
         ]
-        history = self.model.fit(
+        self.training_history = self.model.fit(
             self.train_dataset, validation_data=self.val_dataset,
             epochs=epochs, callbacks=callbacks
         )
-        return history
+        if using_streamlit:
+            import streamlit as st
+            figure_loss = self._plot_history('loss')
+            figure_accuracy = self._plot_history('accuracy')
+            st.plotly_chart(figure_loss)
+            st.plotly_chart(figure_accuracy)
+
+        return self.training_history
